@@ -2,7 +2,7 @@
 <head>
     <title>Form pengajuan</title>
 </head>
-<body>
+{{-- <body>
 <form>
     <label for="nkegiatan">Nama Kegiatan:</label><br>
     <input type="text" id="nkegiatan" name="nkegiatan"><br>
@@ -32,4 +32,4 @@
                     }
             }
         ?>
-</body>
+</body> --}}

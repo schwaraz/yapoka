@@ -149,9 +149,11 @@ class dataangket extends Controller
     }
 
     public function isiangket(){
-    $i=0;
+        $i=0;
+        //yang perlu diganti
       $id = 1;
       $pelaporan = 1;
+      //2 atas
       $data=DB::select('select * from listsoalpelaporan where nomerpelaporan = ?', [$pelaporan]);
       $laporan = DB::select('select * from pelaporan where id = ?', [$pelaporan]);
       $idsoal = explode(",",$data[0]->list_id_soal);
@@ -186,10 +188,11 @@ class dataangket extends Controller
    
     public function submit(request $request){
         $pelaporan= $request->get('idlaporan');
+        $jawaban= $request->get('soal');
         $data=DB::select('select * from listsoalpelaporan where nomerpelaporan = ?', [$pelaporan]);
         $idsoal = explode(",",$data[0]->list_id_soal);
 
-        // $file = $request->file('soal');
+        $file = $request->file('soal');
         $dummy =null;
         $querry = null;
         for ($i=0;$i<count($idsoal);$i++){
@@ -202,13 +205,51 @@ class dataangket extends Controller
 
           }
           $soal = DB::select('select * from posts where '.$querry);
-          dd($soal);
-        //   dd($file[2]);
-        // for($i=0; $i<count($file);$i++){
-        //     $file[2][$i]->store('datagambar');
-        //}
-        
-    }
+          for ($i=0;$i<count($soal);$i++){
+            $tipe=$soal[$i]->type;
+            if($tipe=="text"or $tipe=="number" or $tipe=="textarea" or $tipe=="number" or $tipe=="date"){
+                DB::insert('insert into jawabanform (idpelaporan, idsoal, jawaban) values (?, ?, ?)', [$pelaporan, $soal[$i]->id,$jawaban[$i]]);
+
+            }
+
+            elseif($tipe=="file"){
+                for($j=0; $j<count($file[$i]);$j++){
+                    if($file[$i][$j]){
+                        $namagambar = $file[$i][$j]->store('datagambar');
+                        DB::insert('insert into jawabanform (idpelaporan, idsoal, jawaban) values (?, ?, ?)', [$pelaporan, $soal[$i]->id,$namagambar]);}
+                    
+                }           
+             }
+
+          }
+          //DB::table('listsoalpelaporan')->where('nomerpelaporan', $pelaporan)->update(['status_pengisian' => 'sudah']);
+          //DB::table('pelaporan')->where('id', $pelaporan)->update(['status_penyetuju_nomer' => '1']);
+        }
+        public function ambildata(request $request){
+        //yang perlu diganti
+        $id = 1;
+        $pelaporan = 1;
+        //2 atas
+        $querry = null;
+        $data=DB::select('select * from listsoalpelaporan where nomerpelaporan = ?', [$pelaporan]);
+        $laporan = DB::select('select * from pelaporan where id = ?', [$pelaporan]);
+        $idsoal = explode(",",$data[0]->list_id_soal);
+        for ($i=0;$i<count($idsoal);$i++){
+            $dummy = "id = ".$idsoal[$i];
+            if($i != count($idsoal)-1)
+            {
+                $dummy = $dummy." or ";
+            }
+            $querry = $querry.$dummy;
+  
+          }
+  
+          $soal = DB::select('select * from posts where '.$querry);
+          $jawaban = DB::select('select * from jawabanform INNER JOIN posts ON posts.id = jawabanform.idsoal where idpelaporan =?',[$pelaporan]);
+
+          return view('viewjawaban',compact('jawaban','soal'));
+        }
+
 
     }
 
