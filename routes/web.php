@@ -44,3 +44,4 @@ Route::get('/pilihangket/send', [Postcontroller::class, 'postangket']);
 Route::post('pilihangket/post', [dataangket::class, 'postdata']);
 Route::get('isiangket', [dataangket::class, 'isiangket']);
 Route::post('/isiangket/submit',[dataangket::class, 'submit']);
+Route::get('/ceklaporan',[dataangket::class, 'ambildata']);
