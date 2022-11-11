@@ -37,7 +37,8 @@ Route::post('notifangket', function(){
     return view('notifangket');
 });
 Route::get('tes', function(){
-    return view('tes');
+    $pdf = Pdf::loadView('form');
+    return $pdf->download('invoice.pdf');
 });
 Route::get('pilihangket', [Postcontroller::class, 'getangket']);
 Route::get('/pilihangket/send', [Postcontroller::class, 'postangket']);
@@ -45,3 +46,7 @@ Route::post('pilihangket/post', [dataangket::class, 'postdata']);
 Route::get('isiangket', [dataangket::class, 'isiangket']);
 Route::post('/isiangket/submit',[dataangket::class, 'submit']);
 Route::get('/ceklaporan',[dataangket::class, 'ambildata']);
+Route::post('/ceklaporan/laporanditolak', [dataangket::class, 'tolak']);
+Route::post('/ceklaporan/laporanditerima', [dataangket::class, 'terima']);
+Route::post('/ceklaporan/penyimpanandata', [dataangket::class, 'save']);
+Route::get('/print', [dataangket::class, 'print']);

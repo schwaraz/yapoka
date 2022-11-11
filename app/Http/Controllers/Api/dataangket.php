@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use DB;
 use Illuminate\Validation\Rule;
 use App\Http\Requests\datapost;
+use PDF;
 
 class dataangket extends Controller
 {
@@ -246,10 +247,66 @@ class dataangket extends Controller
   
           $soal = DB::select('select * from posts where '.$querry);
           $jawaban = DB::select('select * from jawabanform INNER JOIN posts ON posts.id = jawabanform.idsoal where idpelaporan =?',[$pelaporan]);
-
-          return view('viewjawaban',compact('jawaban','soal'));
+          $dummy = "simpan";
+          return view('viewjawaban',compact('jawaban','pelaporan','dummy'));
         }
+        public function save(request $request){}
 
+
+        public function terima(request $request){
+            $idpengecek=4;
+            //ganti atas
+            $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
+            $id=explode("'",$dummy[0]->list_id_penyetuju);
+            $arry=$dummy[0]->status_penyetuju_nomer;
+            if($idpengecek==$id[$arry-1]){
+                DB::update('update pelaporan set status_penyetuju_nomer = ? where id = ?', [$dummy[0]->status_penyetuju_nomer+1,$request->idlaporan]);
+            }else{
+                echo("bukan giliran anda dalam pengecekan");
+            }
+        }
+        public function tolak(request $request){
+            $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
+            $id=explode("'",$dummy[0]->list_id_penyetuju);
+            $arry=$dummy[0]->status_penyetuju_nomer;
+            if($idpengecek==$id[$arry-1]){
+            $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
+            }else{
+            DB::update('update pelaporan set status_penyetuju_nomer = ? , note = ? where id = ?', [$dummy[0]->status_penyetuju_nomer-1,$request->note,$request->idlaporan]);
+        }}
+    public function print(request $request){
+        //coba print
+        $pelaporan = 1;
+        $querry = null;
+        $data=DB::select('select * from listsoalpelaporan where nomerpelaporan = ?', [$pelaporan]);
+        $laporan = DB::select('select * from pelaporan where id = ?', [$pelaporan]);
+        $idsoal = explode(",",$data[0]->list_id_soal);
+        for ($i=0;$i<count($idsoal);$i++){
+            $dummy = "id = ".$idsoal[$i];
+                if($i != count($idsoal)-1)
+                {
+            $dummy = $dummy." or ";
+        }
+        $querry = $querry.$dummy;
+
+      }
+
+      $soal = DB::select('select * from posts where '.$querry);
+      $jawaban = DB::select('select * from jawabanform INNER JOIN posts ON posts.id = jawabanform.idsoal where idpelaporan =?',[$pelaporan]);
+    //   return view('hasilprint',compact('jawaban','pelaporan'));
+    //   $pdf = Pdf::loadView('form');
+
+    $contxt = stream_context_create([
+        'ssl' => [
+            'verify_peer' => FALSE,
+            'verify_peer_name' => FALSE,
+            'allow_self_signed' => TRUE,
+        ]
+    ]);
+    $dompdf=Pdf::loadView('hasilprint',compact('jawaban','pelaporan')); 
+    // return PDF::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])->loadView('hasilprint',compact('jawaban','pelaporan'))->stream();
+    return $dompdf->stream();   
+}
 
     }
 

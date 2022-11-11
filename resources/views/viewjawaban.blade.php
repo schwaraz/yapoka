@@ -8,14 +8,19 @@
         </style>
 </head>
 <body>
-    <form id="form" action="/ceklaporan/save" method="POST">
+    <form id="form" action="ceklaporan/save" method="POST">
         @csrf
+        <input type="hidden" name="idlaporan" value="{{$pelaporan}}">
+        <input type="text" name="button" id="button" value="{{old('button')}}" >
+        <input type="hidden" name="note" id="note">
+        {{-- bawah nanti isi judul e ndooooo --}}
+        <input type="text" name="title" >
     <table>
         
     @for($i=0;$i<count($jawaban);$i++)
     <tr>
         
-    @if($jawaban[$i]->type == "file")
+    {{-- @if($jawaban[$i]->type == "file")
     <br><td colspan="3">
     <img src="{{asset('storage/'.$jawaban[$i]->jawaban)}}" width="500" 
      height="500"><br>
@@ -36,11 +41,11 @@
     {{$jawaban[$i]->jawaban}}<br>
         </td>
     @endif
-    </tr>
+    </tr> --}}
 
 
     {{-- bagian kalo pake input --}}
-    {{-- @if($jawaban[$i]->type == "file")
+    @if($jawaban[$i]->type == "file")
     <br><td colspan="3">
     <img src="{{asset('storage/'.$jawaban[$i]->jawaban)}}" width="500" 
      height="500"><br>
@@ -62,13 +67,13 @@
         </td>
 </tr>
 
-    @endif --}}
+    @endif
 
     @endfor
     <tr>
         <td><input type="button" value="tolak" onclick="tolak()"></td>
-        <td><input type="button" value="terima tanpa simpan perubahan" onclick="accapeted()"></td>
-        <td><input type="button" value="terima dengan simpan semua perubahan" onclick="save()"></td>
+        <td><input type="submit" value="terima tanpa simpan perubahan" formaction="ceklaporan/laporanditerima"></td>
+        <td><input type="submit" value="terima dengan simpan semua perubahan"></td>
     </tr>
     </table>
     </form>
@@ -81,14 +86,8 @@
     text = "mohon isi catatan kenapa ditolak";
     alert(text);
   } else {
-    document.getElementById("form").submit(); 
-  }
-}
-function alaram() {
-    var text = document.getElementById("pesan").value; 
-    if(text != "kosong"){    
-      alert(text);
-}
- 
-}
+    document.getElementById('form').action = "ceklaporan/laporanditolak";
+    document.getElementById("note").value =person;
+    document.getElementById("form").submit();
+}}
 </script>
