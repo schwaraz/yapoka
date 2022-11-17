@@ -250,7 +250,18 @@ class dataangket extends Controller
           $dummy = "simpan";
           return view('viewjawaban',compact('jawaban','pelaporan','dummy'));
         }
-        public function save(request $request){}
+        public function save(request $request){
+            $idpengecek=4;
+            //ganti atas
+            $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
+            $id=explode("'",$dummy[0]->list_id_penyetuju);
+            $arry=$dummy[0]->status_penyetuju_nomer;
+            if($idpengecek==$id[$arry-1]){
+                DB::update('update pelaporan set status_penyetuju_nomer = ? where id = ?', [$dummy[0]->status_penyetuju_nomer+1,$request->idlaporan]);
+            }else{
+                echo("bukan giliran anda dalam pengecekan");
+            }
+        }
 
 
         public function terima(request $request){
