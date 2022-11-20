@@ -49,4 +49,5 @@ Route::get('/ceklaporan',[dataangket::class, 'ambildata']);
 Route::post('/ceklaporan/laporanditolak', [dataangket::class, 'tolak']);
 Route::post('/ceklaporan/laporanditerima', [dataangket::class, 'terima']);
 Route::post('/ceklaporan/penyimpanandata', [dataangket::class, 'save']);
+Route::get('/preview', [dataangket::class, 'priview']);
 Route::get('/print', [dataangket::class, 'print']);

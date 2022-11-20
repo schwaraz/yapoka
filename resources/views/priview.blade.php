@@ -5,14 +5,9 @@
             margin-left: auto;
   margin-right: auto;
 }
-img {
-    max-width: 500px;
-    max-height: 750px;
-}
         </style>
 </head>
 <body>
-    <form id="form" action="/ceklaporan/save" method="POST">
         @csrf
 <h1>judul laporan nanti masuk sini</h1>
     <table>
@@ -22,7 +17,8 @@ img {
         
     @if($jawaban[$i]->type == "file")
     <br><td colspan="3">
-    <img src="{{public_path("storage/".$jawaban[$i]->jawaban)}}" ><br>
+        
+    <img src="{{asset("storage/".$jawaban[$i]->jawaban)}}" width="400px" ><br>
     </td>
 </tr>
 <tr>
@@ -44,5 +40,8 @@ img {
     @endfor
    
     </table>
+    <form action="/print">
+        <input type="hidden" name="pelaporan" value="{{$pelaporan}}">
+        <input type="submit" value="Print">
     </form>
 </body>

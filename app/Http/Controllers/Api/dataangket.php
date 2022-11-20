@@ -256,11 +256,12 @@ class dataangket extends Controller
             $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
             $id=explode("'",$dummy[0]->list_id_penyetuju);
             $arry=$dummy[0]->status_penyetuju_nomer;
-            if($idpengecek==$id[$arry-1]){
-                DB::update('update pelaporan set status_penyetuju_nomer = ? where id = ?', [$dummy[0]->status_penyetuju_nomer+1,$request->idlaporan]);
-            }else{
-                echo("bukan giliran anda dalam pengecekan");
-            }
+            
+            // if($idpengecek==$id[$arry-1]){
+            //     DB::update('update pelaporan set status_penyetuju_nomer = ? where id = ?', [$dummy[0]->status_penyetuju_nomer+1,$request->idlaporan]);
+            // }else{
+            //     echo("bukan giliran anda dalam pengecekan");
+            // }
         }
 
 
@@ -285,9 +286,41 @@ class dataangket extends Controller
             }else{
             DB::update('update pelaporan set status_penyetuju_nomer = ? , note = ? where id = ?', [$dummy[0]->status_penyetuju_nomer-1,$request->note,$request->idlaporan]);
         }}
+
+        public function priview(request $request){
+            $pelaporan = 1;
+            $querry = null;
+            $data=DB::select('select * from listsoalpelaporan where nomerpelaporan = ?', [$pelaporan]);
+            $laporan = DB::select('select * from pelaporan where id = ?', [$pelaporan]);
+            $idsoal = explode(",",$data[0]->list_id_soal);
+            for ($i=0;$i<count($idsoal);$i++){
+                $dummy = "id = ".$idsoal[$i];
+                    if($i != count($idsoal)-1)
+                    {
+                $dummy = $dummy." or ";
+            }
+            $querry = $querry.$dummy;
+    
+          }
+    
+          $soal = DB::select('select * from posts where '.$querry);
+          $jawaban = DB::select('select * from jawabanform INNER JOIN posts ON posts.id = jawabanform.idsoal where idpelaporan =?',[$pelaporan]);
+        //   return view('hasilprint',compact('jawaban','pelaporan'));
+        //   $pdf = Pdf::loadView('form');
+    
+        $contxt = stream_context_create([
+            'ssl' => [
+                'verify_peer' => FALSE,
+                'verify_peer_name' => FALSE,
+                'allow_self_signed' => TRUE,
+            ]
+        ]);
+        return View('priview',compact('jawaban','pelaporan'));
+    }
+    
+        
     public function print(request $request){
-        //coba print
-        $pelaporan = 1;
+        $pelaporan = $request->get('pelaporan');
         $querry = null;
         $data=DB::select('select * from listsoalpelaporan where nomerpelaporan = ?', [$pelaporan]);
         $laporan = DB::select('select * from pelaporan where id = ?', [$pelaporan]);
