@@ -8,7 +8,7 @@
         </style>
 </head>
 <body>
-    <form id="form" action="ceklaporan/save" method="POST">
+    <form id="form" action="ceklaporan/penyimpanandata" method="POST">
         @csrf
         <input type="hidden" name="idlaporan" value="{{$pelaporan}}">
         <input type="text" name="button" id="button" value="{{old('button')}}" >

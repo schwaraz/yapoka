@@ -51,3 +51,5 @@ Route::post('/ceklaporan/laporanditerima', [dataangket::class, 'terima']);
 Route::post('/ceklaporan/penyimpanandata', [dataangket::class, 'save']);
 Route::get('/preview', [dataangket::class, 'priview']);
 Route::get('/print', [dataangket::class, 'print']);
+Route::get('/revisi', [dataangket::class, 'revisi']);
+//kurang submit revisi ambil tolak cuma update ke sananya ganti +1

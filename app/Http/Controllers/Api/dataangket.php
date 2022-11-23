@@ -253,15 +253,32 @@ class dataangket extends Controller
         public function save(request $request){
             $idpengecek=4;
             //ganti atas
+            $querry = null;
             $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
             $id=explode("'",$dummy[0]->list_id_penyetuju);
             $arry=$dummy[0]->status_penyetuju_nomer;
-            
-            // if($idpengecek==$id[$arry-1]){
-            //     DB::update('update pelaporan set status_penyetuju_nomer = ? where id = ?', [$dummy[0]->status_penyetuju_nomer+1,$request->idlaporan]);
-            // }else{
-            //     echo("bukan giliran anda dalam pengecekan");
-            // }
+            $data=DB::select('select * from listsoalpelaporan where nomerpelaporan = ?', [$request->idlaporan]);
+            $idsoal = explode(",",$data[0]->list_id_soal);
+            for ($i=0;$i<count($idsoal);$i++){
+                $dummy = "id = ".$idsoal[$i];
+                if($i != count($idsoal)-1)
+                {
+                    $dummy = $dummy." or ";
+                }
+                $querry = $querry.$dummy;
+      
+              }
+              $soal = DB::select('select * from posts where '.$querry);
+            if($idpengecek==$id[$arry-1]){
+                for($i=0;$i<count($soal);$i++){
+                    if($soal[$i]->type != "file"){
+                        DB::update('update jawabanform set jawaban = ? where idpelaporan = ? and idsoal = ?', [$request->get($soal[$i]->id),$request->idlaporan,$soal[$i]->id]);
+                    }
+                }
+                DB::update('update pelaporan set status_penyetuju_nomer = ? where id = ?', [$dummy[0]->status_penyetuju_nomer+1,$request->idlaporan]);                
+                }else{
+                echo("bukan giliran anda dalam pengecekan");
+            }
         }
 
 
@@ -278,13 +295,17 @@ class dataangket extends Controller
             }
         }
         public function tolak(request $request){
+            $idpengecek=4;
+            //ganti atas
             $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
             $id=explode("'",$dummy[0]->list_id_penyetuju);
             $arry=$dummy[0]->status_penyetuju_nomer;
             if($idpengecek==$id[$arry-1]){
             $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
+            DB::update('update pelaporan set status_penyetuju_nomer = ? , note = ? where id = ?', ['0',$request->note,$request->idlaporan]);
             }else{
-            DB::update('update pelaporan set status_penyetuju_nomer = ? , note = ? where id = ?', [$dummy[0]->status_penyetuju_nomer-1,$request->note,$request->idlaporan]);
+                echo("bukan giliran anda dalam pengecekan");
+
         }}
 
         public function priview(request $request){
@@ -350,6 +371,34 @@ class dataangket extends Controller
     $dompdf=Pdf::loadView('hasilprint',compact('jawaban','pelaporan')); 
     // return PDF::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])->loadView('hasilprint',compact('jawaban','pelaporan'))->stream();
     return $dompdf->stream();   
+}
+
+////////////////// ini baru
+
+
+public function revisi(request $request){
+//yang perlu diganti
+$id = 1;
+$pelaporan = 1;
+//2 atas
+$querry = null;
+$data=DB::select('select * from listsoalpelaporan where nomerpelaporan = ?', [$pelaporan]);
+$laporan = DB::select('select * from pelaporan where id = ?', [$pelaporan]);
+$idsoal = explode(",",$data[0]->list_id_soal);
+for ($i=0;$i<count($idsoal);$i++){
+    $dummy = "id = ".$idsoal[$i];
+    if($i != count($idsoal)-1)
+    {
+        $dummy = $dummy." or ";
+    }
+    $querry = $querry.$dummy;
+
+  }
+
+  $soal = DB::select('select * from posts where '.$querry);
+  $jawaban = DB::select('select * from jawabanform INNER JOIN posts ON posts.id = jawabanform.idsoal where idpelaporan =?',[$pelaporan]);
+  $dummy = "simpan";
+  return view('revisijawaban',compact('jawaban','pelaporan','dummy'));
 }
 
     }
