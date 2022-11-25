@@ -8,7 +8,7 @@
         </style>
 </head>
 <body onload="note()">
-    <input type="hidden" name="note" id="note" value={{$dummy}}>
+    <input type="hidden" name="note" id="note" value="{{$dummy}}">
 
     <form id="form" action="revisi/submit" method="POST">
         @csrf
@@ -51,6 +51,7 @@
     </form>
 </body>
 <script>
-var text = document.getElementById("note").value; 
-      alert(text);
+    function note(){var text = document.getElementById("note").value; 
+      alert(text);}
+
 </script>

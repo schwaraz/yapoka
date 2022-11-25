@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string('note')->nullable();
             $table->integer('jumlah_penyetuju');
             $table->string('list_id_penyetuju');
-            
+            $table->integer('idsekarang');
+            $table->boolean('confirmed')->nullable()->default(false);;
         });
     }
 
@@ -31,6 +32,7 @@ return new class extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('pelaporan');
+
     }
 };

@@ -105,7 +105,7 @@ class dataangket extends Controller
                          }
                       }
                 $jumlahpenyetuju = count($pemeriksa);
-              DB::insert('insert into pelaporan (idpengisidata, status_penyetuju_nomer, jumlah_penyetuju,list_id_penyetuju) values (?, 0, ?, ?)', [1, $jumlahpenyetuju,$listpemeriksa]);
+              DB::insert('insert into pelaporan (idpengisidata, status_penyetuju_nomer, jumlah_penyetuju,list_id_penyetuju,idsekarang) values (?, 0, ?, ?,?)', [1, $jumlahpenyetuju,$listpemeriksa,1]);// dua semua id pengisi data
               $idlaporan = DB::getPdo()->lastInsertId();
                DB::insert('insert into listsoalpelaporan (nomerpelaporan, status_pengisian, list_id_soal) values (?, ?, ?)', [$idlaporan, 'belum',$angka]);
             /*
@@ -193,6 +193,9 @@ class dataangket extends Controller
         $data=DB::select('select * from listsoalpelaporan where nomerpelaporan = ?', [$pelaporan]);
         $idsoal = explode(",",$data[0]->list_id_soal);
 
+        $datapelaporan=DB::select('select * from pelaporan where id = ?', [$pelaporan]);
+        $id=explode("'",$datapelaporan[0]->list_id_penyetuju);
+
         $file = $request->file('soal');
         $dummy =null;
         $querry = null;
@@ -217,18 +220,18 @@ class dataangket extends Controller
                 for($j=0; $j<count($file[$i]);$j++){
                     if($file[$i][$j]){
                         $namagambar = $file[$i][$j]->store('datagambar');
-                        DB::insert('insert into jawabanform (idpelaporan, idsoal, jawaban) values (?, ?, ?)', [$pelaporan, $soal[$i]->id,$namagambar]);}
+                        DB::insert('insert into jawabanform (idpelaporan, idsoal, jawaban) values (?, ?, ?)', [$pelaporan, $soal[$i]->id,$namagambar],);}
                     
                 }           
              }
 
           }
-          //DB::table('listsoalpelaporan')->where('nomerpelaporan', $pelaporan)->update(['status_pengisian' => 'sudah']);
-          //DB::table('pelaporan')->where('id', $pelaporan)->update(['status_penyetuju_nomer' => '1']);
+          DB::table('listsoalpelaporan')->where('nomerpelaporan', $pelaporan)->update(['status_pengisian' => 'sudah']);
+          DB::update('update pelaporan set status_penyetuju_nomer = ?,idsekarang = ? where id = ?', [$datapelaporan[0]->status_penyetuju_nomer+1,$id[0] ,$request->idlaporan]);                
         }
         public function ambildata(request $request){
         //yang perlu diganti
-        $id = 1;
+        
         $pelaporan = 1;
         //2 atas
         $querry = null;
@@ -247,16 +250,15 @@ class dataangket extends Controller
   
           $soal = DB::select('select * from posts where '.$querry);
           $jawaban = DB::select('select * from jawabanform INNER JOIN posts ON posts.id = jawabanform.idsoal where idpelaporan =?',[$pelaporan]);
-          $dummy = "simpan";
-          return view('viewjawaban',compact('jawaban','pelaporan','dummy'));
+          return view('viewjawaban',compact('jawaban','pelaporan'));
         }
         public function save(request $request){
-            $idpengecek=4;
+            $idpengecek=2;
             //ganti atas
             $querry = null;
-            $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
-            $id=explode("'",$dummy[0]->list_id_penyetuju);
-            $arry=$dummy[0]->status_penyetuju_nomer;
+            $datapelaporan = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
+            $id=explode("'",$datapelaporan[0]->list_id_penyetuju);
+            $arry=$datapelaporan[0]->status_penyetuju_nomer;
             $data=DB::select('select * from listsoalpelaporan where nomerpelaporan = ?', [$request->idlaporan]);
             $idsoal = explode(",",$data[0]->list_id_soal);
             for ($i=0;$i<count($idsoal);$i++){
@@ -275,7 +277,7 @@ class dataangket extends Controller
                         DB::update('update jawabanform set jawaban = ? where idpelaporan = ? and idsoal = ?', [$request->get($soal[$i]->id),$request->idlaporan,$soal[$i]->id]);
                     }
                 }
-                DB::update('update pelaporan set status_penyetuju_nomer = ? where id = ?', [$dummy[0]->status_penyetuju_nomer+1,$request->idlaporan]);                
+                DB::update('update pelaporan set status_penyetuju_nomer = ?,idsekarang = ? where id = ?', [$datapelaporan[0]->status_penyetuju_nomer+1,$id[$datapelaporan[0]->status_penyetuju_nomer] ,$request->idlaporan]);                
                 }else{
                 echo("bukan giliran anda dalam pengecekan");
             }
@@ -283,26 +285,32 @@ class dataangket extends Controller
 
 
         public function terima(request $request){
-            $idpengecek=4;
+            $idpengecek=3;
             //ganti atas
             $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
             $id=explode("'",$dummy[0]->list_id_penyetuju);
             $arry=$dummy[0]->status_penyetuju_nomer;
             if($idpengecek==$id[$arry-1]){
-                DB::update('update pelaporan set status_penyetuju_nomer = ? where id = ?', [$dummy[0]->status_penyetuju_nomer+1,$request->idlaporan]);
+                if(isset($id[$arry])){
+                    DB::update('update pelaporan set status_penyetuju_nomer = ?,idsekarang = ? where id = ?', [$dummy[0]->status_penyetuju_nomer+1,$id[$dummy[0]->status_penyetuju_nomer],$request->idlaporan]);
+                }
+                else{
+                    DB::update('update pelaporan set status_penyetuju_nomer = ?, confirmed= ? where id = ?', [$dummy[0]->status_penyetuju_nomer+1,true,$request->idlaporan]);
+
+                }
             }else{
                 echo("bukan giliran anda dalam pengecekan");
             }
         }
         public function tolak(request $request){
-            $idpengecek=4;
+            $idpengecek=3;
             //ganti atas
             $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
             $id=explode("'",$dummy[0]->list_id_penyetuju);
             $arry=$dummy[0]->status_penyetuju_nomer;
             if($idpengecek==$id[$arry-1]){
             $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
-            DB::update('update pelaporan set status_penyetuju_nomer = ? , note = ? where id = ?', ['0',$request->note,$request->idlaporan]);
+            DB::update('update pelaporan set status_penyetuju_nomer = ? , note = ?,idsekarang= ? where id = ?', ['0',$request->note,$dummy[0]->idpengisidata,$request->idlaporan]);
             }else{
                 echo("bukan giliran anda dalam pengecekan");
 
@@ -397,7 +405,7 @@ for ($i=0;$i<count($idsoal);$i++){
 
   $soal = DB::select('select * from posts where '.$querry);
   $jawaban = DB::select('select * from jawabanform INNER JOIN posts ON posts.id = jawabanform.idsoal where idpelaporan =?',[$pelaporan]);
-  $dummy = $data->note;
+  $dummy = $laporan[0]->note;
   return view('revisijawaban',compact('jawaban','pelaporan','dummy'));
 }
 
@@ -408,9 +416,9 @@ public function updaterevisi(request $request){
     $idpengisi=1;
     //ganti atas
     $querry = null;
-    $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
-    $id=explode("'",$dummy[0]->list_id_penyetuju);
-    $arry=$dummy[0]->status_penyetuju_nomer;
+    $datapelaporan = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
+    $id=explode("'",$datapelaporan[0]->list_id_penyetuju);
+    $arry=$datapelaporan[0]->status_penyetuju_nomer;
     $data=DB::select('select * from listsoalpelaporan where nomerpelaporan = ?', [$request->idlaporan]);
     $idsoal = explode(",",$data[0]->list_id_soal);
     for ($i=0;$i<count($idsoal);$i++){
@@ -424,13 +432,13 @@ public function updaterevisi(request $request){
       }
       $soal = DB::select('select * from posts where '.$querry);
       if($arry==0){
-        if($idpengisi==$dummy[0]->idpengisidata){
+        if($idpengisi==$datapelaporan[0]->idpengisidata){
         for($i=0;$i<count($soal);$i++){
             if($soal[$i]->type != "file"){
                 DB::update('update jawabanform set jawaban = ? where idpelaporan = ? and idsoal = ?', [$request->get($soal[$i]->id),$request->idlaporan,$soal[$i]->id]);
             }
         }
-        DB::update('update pelaporan set status_penyetuju_nomer = ? where id = ?', [$dummy[0]->status_penyetuju_nomer+1,$request->idlaporan]);                
+        DB::update('update pelaporan set status_penyetuju_nomer = ?,idsekarang = ? where id = ?', [$datapelaporan[0]->status_penyetuju_nomer+1,$id[0],$request->idlaporan]);                
         }else{
         echo("bukan giliran anda dalam pengecekan");
     }
