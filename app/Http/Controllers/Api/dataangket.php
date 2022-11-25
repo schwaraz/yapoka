@@ -397,7 +397,7 @@ for ($i=0;$i<count($idsoal);$i++){
 
   $soal = DB::select('select * from posts where '.$querry);
   $jawaban = DB::select('select * from jawabanform INNER JOIN posts ON posts.id = jawabanform.idsoal where idpelaporan =?',[$pelaporan]);
-  $dummy = "simpan";
+  $dummy = $data->note;
   return view('revisijawaban',compact('jawaban','pelaporan','dummy'));
 }
 

@@ -7,11 +7,12 @@
 }
         </style>
 </head>
-<body>
+<body onload="note()">
+    <input type="hidden" name="note" id="note" value={{$dummy}}>
+
     <form id="form" action="revisi/submit" method="POST">
         @csrf
         <input type="hidden" name="idlaporan" value="{{$pelaporan}}">
-        <input type="hidden" name="note" id="note">
         {{-- bawah nanti isi judul e ndooooo --}}
         <input type="text" name="title" >
     <table>
@@ -49,3 +50,7 @@
     </table>
     </form>
 </body>
+<script>
+var text = document.getElementById("note").value; 
+      alert(text);
+</script>
