@@ -401,5 +401,45 @@ for ($i=0;$i<count($idsoal);$i++){
   return view('revisijawaban',compact('jawaban','pelaporan','dummy'));
 }
 
+
+
+
+public function updaterevisi(request $request){
+    $idpengisi=1;
+    //ganti atas
+    $querry = null;
+    $dummy = DB::select('select * from pelaporan where id = ?', [$request->idlaporan]);
+    $id=explode("'",$dummy[0]->list_id_penyetuju);
+    $arry=$dummy[0]->status_penyetuju_nomer;
+    $data=DB::select('select * from listsoalpelaporan where nomerpelaporan = ?', [$request->idlaporan]);
+    $idsoal = explode(",",$data[0]->list_id_soal);
+    for ($i=0;$i<count($idsoal);$i++){
+        $dummy = "id = ".$idsoal[$i];
+        if($i != count($idsoal)-1)
+        {
+            $dummy = $dummy." or ";
+        }
+        $querry = $querry.$dummy;
+
+      }
+      $soal = DB::select('select * from posts where '.$querry);
+      if($arry==0){
+        if($idpengisi==$dummy[0]->idpengisidata){
+        for($i=0;$i<count($soal);$i++){
+            if($soal[$i]->type != "file"){
+                DB::update('update jawabanform set jawaban = ? where idpelaporan = ? and idsoal = ?', [$request->get($soal[$i]->id),$request->idlaporan,$soal[$i]->id]);
+            }
+        }
+        DB::update('update pelaporan set status_penyetuju_nomer = ? where id = ?', [$dummy[0]->status_penyetuju_nomer+1,$request->idlaporan]);                
+        }else{
+        echo("bukan giliran anda dalam pengecekan");
+    }
+}
+else{
+    echo("laporan sedang di cek tunggu terima revisi untuk ganti isi laporan");
+}
+    
+}
+
     }
 
